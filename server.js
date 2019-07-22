@@ -7,7 +7,7 @@ const cors = require('cors')
 // require route files
 const exampleRoutes = require('./app/routes/example_routes')
 const userRoutes = require('./app/routes/user_routes')
-
+const uploadRoutes = require('./app/routes/upload_routes')
 // require error handling middleware
 const errorHandler = require('./lib/error_handler')
 
@@ -52,6 +52,13 @@ app.use(tokenOrBearer)
 // register passport authentication middleware
 app.use(auth)
 
+app.use((req, res, next) => {
+    console.log('==================')
+    console.log(req.body)
+    console.log('==================')
+    next()
+  })
+    
 // add `bodyParser` middleware which will parse JSON requests into
 // JS objects before they reach the route files.
 // The method `.use` sets up middleware for the Express application
@@ -65,7 +72,7 @@ app.use(requestLogger)
 // register route files
 app.use(exampleRoutes)
 app.use(userRoutes)
-
+app.use(uploadRoutes)
 // register error handling middleware
 // note that this comes after the route middlewares, because it needs to be
 // passed any error messages from them
