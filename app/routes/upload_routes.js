@@ -4,9 +4,41 @@ const customErrors = require('../../lib/custom_errors')
 const handle404 = customErrors.handle404
 const removeBlanks = require('../../lib/remove_blank_fields')
 const router = express.Router()
+
+// Require the multer middle library for handling multi-part requests
 const multer = require('multer')
-const upload = multer({ dest: 'uploads/' })
-const promiseS3Upload = require('../../lib/s3Upload.js')
+
+// Configure the upload object telling multer where we want to store the image
+// temporarily on the server before sending it to aws.
+const upload = multer({ dest: 'uploads/', storage: multer.memoryStorage() })
+
+// Require our promisified s3Upload function.
+const promiseS3Upload = require('../../lib/s3UploadApi.js')
+
+// CREATE
+// POST /uploads
+// In our POST route for /uploads we include the multer middleware.
+// The `single` method needs the name attribute from the form's input that has
+// a type of file
+router.post('/uploads', upload.single('image'), (req, res, next) => {
+    console.log(req.file)
+  // Invoke our promisified s3Upload function, passing in the req.file which is
+  // an object that multer attached to the request object.
+  promiseS3Upload(req.file)
+ 
+    // This .then receives the response from aws if the upload was successful.
+    .then(awsResponse => { console.log('amazzzooooon'+awsResponse)
+      // Create an Upload document with the Location property from aws's
+      // response.
+      return Upload.create({url: awsResponse.Location})
+    })
+    // This .then receives the Mongo document from the DB.
+    .then(upload => { console.log(upload)
+      // Convert the document to json to send back to the client.
+      res.status(201).json({ upload: upload.toObject() })
+    })
+    .catch(next)
+})
 
 // INDEX
 // GET /uploads
@@ -25,17 +57,6 @@ router.get('/uploads/:id', (req, res, next) => {
   Upload.findById(req.params.id)
     .then(handle404)
     .then(upload => res.status(200).json({ upload: upload.toObject() }))
-    .catch(next)
-})
-
-// CREATE
-// POST /uploads
-router.post('/uploads', upload.single('image'), (req, res, next) => {
-  promiseS3Upload()
-  Upload.create(req.body.upload)
-    .then(upload => {
-      res.status(201).json({ upload: upload.toObject() })
-    })
     .catch(next)
 })
 
