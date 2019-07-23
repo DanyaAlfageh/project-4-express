@@ -28,4 +28,11 @@ userSchema.virtual('examples', {
   foreignField: 'owner'
 });
 
+userSchema.virtual('uploads', {
+  ref: 'Upload',
+  localField: '_id',
+  foreignField: 'owner'
+});
+
+
 module.exports = mongoose.model('User', userSchema)

@@ -70,9 +70,10 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(requestLogger)
 
 // register route files
+app.use(uploadRoutes)
 app.use(exampleRoutes)
 app.use(userRoutes)
-app.use(uploadRoutes)
+
 // register error handling middleware
 // note that this comes after the route middlewares, because it needs to be
 // passed any error messages from them

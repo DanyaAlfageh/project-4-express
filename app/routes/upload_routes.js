@@ -1,8 +1,11 @@
 const express = require('express')
+const passport = require('passport')
 const Upload = require('../models/upload')
 const customErrors = require('../../lib/custom_errors')
 const handle404 = customErrors.handle404
+const requireOwnership = customErrors.requireOwnership
 const removeBlanks = require('../../lib/remove_blank_fields')
+const requireToken = passport.authenticate('bearer', { session: false })
 const router = express.Router()
 
 // Require the multer middle library for handling multi-part requests
@@ -20,17 +23,13 @@ const promiseS3Upload = require('../../lib/s3UploadApi.js')
 // In our POST route for /uploads we include the multer middleware.
 // The `single` method needs the name attribute from the form's input that has
 // a type of file
-router.post('/uploads', upload.single('image'), (req, res, next) => {
-    console.log(req)
+router.post('/uploads', upload.single('image'), requireToken, (req, res, next) => {
+    console.log(req.user)
   // Invoke our promisified s3Upload function, passing in the req.file which is
   // an object that multer attached to the request object.
   promiseS3Upload(req.file)
- 
-    // This .then receives the response from aws if the upload was successful.
-    .then(awsResponse => { console.log('amazzzooooon'+awsResponse)
-      // Create an Upload document with the Location property from aws's
-      // response.
-      return Upload.create({url: awsResponse.Location})
+    .then(awsResponse => { console.log(awsResponse)
+      return Upload.create({url: awsResponse.Location , owner: req.user._id })
     })
     // This .then receives the Mongo document from the DB.
     .then(upload => { console.log(upload)
@@ -42,8 +41,8 @@ router.post('/uploads', upload.single('image'), (req, res, next) => {
 
 // INDEX
 // GET /uploads
-router.get('/uploads', (req, res, next) => {
-  Upload.find()
+router.get('/uploads', requireToken, (req, res, next) => {
+  Upload.find({owner: req.user._id})
     .then(uploads => {
       return uploads.map(upload => upload.toObject())
     })
@@ -53,7 +52,7 @@ router.get('/uploads', (req, res, next) => {
 
 // SHOW
 // GET /uploads/5a7db6c74d55bc51bdf39793
-router.get('/uploads/:id', (req, res, next) => {
+router.get('/uploads/:id', requireToken,(req, res, next) => {
   Upload.findById(req.params.id)
     .then(handle404)
     .then(upload => res.status(200).json({ upload: upload.toObject() }))
@@ -74,10 +73,11 @@ router.patch('/uploads/:id', removeBlanks, (req, res, next) => {
 
 // DESTROY
 // DELETE /uploads/5a7db6c74d55bc51bdf39793
-router.delete('/uploads/:id', (req, res, next) => {
+router.delete('/uploads/:id', requireToken, (req, res, next) => {
   Upload.findById(req.params.id)
     .then(handle404)
     .then(upload => {
+      requireOwnership(req, upload)
       upload.remove()
     })
     .then(() => res.sendStatus(204))
