@@ -21,7 +21,7 @@ const promiseS3Upload = require('../../lib/s3UploadApi.js')
 // The `single` method needs the name attribute from the form's input that has
 // a type of file
 router.post('/uploads', upload.single('image'), (req, res, next) => {
-    console.log(req.file)
+    console.log(req)
   // Invoke our promisified s3Upload function, passing in the req.file which is
   // an object that multer attached to the request object.
   promiseS3Upload(req.file)
