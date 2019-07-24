@@ -1,6 +1,7 @@
 const express = require('express')
 const passport = require('passport')
 const Upload = require('../models/upload')
+// const Tag = require('../models/upload')
 const customErrors = require('../../lib/custom_errors')
 const handle404 = customErrors.handle404
 const requireOwnership = customErrors.requireOwnership
@@ -61,11 +62,15 @@ router.get('/uploads/:id', requireToken,(req, res, next) => {
 
 // UPDATE
 // PATCH /uploads/5a7db6c74d55bc51bdf39793
-router.patch('/uploads/:id', removeBlanks, (req, res, next) => {
+router.put('/uploads/:id', removeBlanks, (req, res, next) => {
   Upload.findById(req.params.id)
     .then(handle404)
     .then(upload => {
-      return upload.update(req.body.upload)
+      const tag = req.body.tags
+      // console.log(tag)
+      upload.tags.unshift(tag)
+      // console.log(upload.tags)
+       return upload.save();
     })
     .then(() => res.sendStatus(204))
     .catch(next)
