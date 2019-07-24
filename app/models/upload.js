@@ -18,7 +18,7 @@ const uploadSchema = new mongoose.Schema({
       ref: 'User'
     },
     tags:[TagsSchema]
-  },   
+  },  
   {
   timestamps: true
 })
