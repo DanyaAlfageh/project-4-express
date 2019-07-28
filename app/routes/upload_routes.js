@@ -74,9 +74,6 @@ router.get('/uploads/:word', (req, res, next) => {
     .catch(next)
 })
 
-
-
-
 // SHOW
 // GET /uploads/5a7db6c74d55bc51bdf39793
 router.get('/uploads/:id', requireToken,(req, res, next) => {
