@@ -41,6 +41,18 @@ router.post('/uploads', upload.single('image'), requireToken, (req, res, next) =
 })
 
 // INDEX
+// GET /All uploads
+
+// router.get('/uploads/all', (req, res, next) => {
+//   Upload.find()
+//     .then(uploads => {
+//       return uploads.map(upload => upload.toObject())
+//     })
+//     .then(uploads => res.status(200).json({ uploads: uploads }))
+//     .catch(next)
+// })
+
+// INDEX
 // GET /uploads
 router.get('/uploads', requireToken, (req, res, next) => {
   Upload.find({owner: req.user._id})
@@ -50,6 +62,20 @@ router.get('/uploads', requireToken, (req, res, next) => {
     .then(uploads => res.status(200).json({ uploads: uploads }))
     .catch(next)
 })
+
+// INDEX by tag 
+// GET /uploads
+router.get('/uploads/:word', (req, res, next) => {
+  Upload.find({"tags.tag":req.params.word})
+    .then(uploads => {
+      return uploads.map(upload => upload.toObject())
+    })
+    .then(uploads => res.status(200).json({ uploads: uploads }))
+    .catch(next)
+})
+
+
+
 
 // SHOW
 // GET /uploads/5a7db6c74d55bc51bdf39793
