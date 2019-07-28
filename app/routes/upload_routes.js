@@ -63,23 +63,23 @@ router.get('/uploads', requireToken, (req, res, next) => {
     .catch(next)
 })
 
-// INDEX by tag 
-// GET /uploads
-router.get('/uploads/:word', (req, res, next) => {
-  Upload.find({"tags.tag":req.params.word})
-    .then(uploads => {
-      return uploads.map(upload => upload.toObject())
-    })
-    .then(uploads => res.status(200).json({ uploads: uploads }))
-    .catch(next)
-})
-
 // SHOW
 // GET /uploads/5a7db6c74d55bc51bdf39793
 router.get('/uploads/:id', requireToken,(req, res, next) => {
   Upload.findById(req.params.id)
     .then(handle404)
     .then(upload => res.status(200).json({ upload: upload.toObject() }))
+    .catch(next)
+})
+
+// INDEX by tag 
+// GET /uploads
+router.get('/uploads/tag/s=:word', (req, res, next) => {
+  Upload.find({"tags.tag":req.params.word})
+    .then(uploads => {
+      return uploads.map(upload => upload.toObject())
+    })
+    .then(uploads => res.status(200).json({ uploads: uploads }))
     .catch(next)
 })
 
