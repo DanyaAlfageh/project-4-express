@@ -95,7 +95,7 @@ router.put('/uploads/:id', removeBlanks, (req, res, next) => {
       // console.log(upload.tags)
        return upload.save();
     })
-    .then(() => res.sendStatus(204))
+    .then((upload) => res.status(200).json({ upload: upload.toObject() }))
     .catch(next)
 })
 
