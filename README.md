@@ -29,3 +29,16 @@ I have made the following routes in my uploads routes file as follows. The route
 | GET  | `/uploads/:id` | `get#single-upload-by-id`  |
 | PUT  | `/uploads/:id` | `update#adds-tag-to-image`  |
 | DELETE | `/uploads/:id`        | `delete#single-upload`   |
+
+## Sample Code
+### Tag Search route
+```
+router.get('/uploads/tag/s=:word', (req, res, next) => {
+  Upload.find({"tags.tag":req.params.word})
+    .then(uploads => {
+      return uploads.map(upload => upload.toObject())
+    })
+    .then(uploads => res.status(200).json({ uploads: uploads }))
+    .catch(next)
+})
+```
